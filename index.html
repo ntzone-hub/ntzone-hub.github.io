@@ -95,6 +95,9 @@ button{font:inherit;color:inherit}
 .tag.ln{background:var(--accent-soft);color:var(--accent)}
 .tag.hot{background:var(--hot);color:#fff}
 .tag.tet{background:var(--tet-soft);color:var(--tet)}
+.auth{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;letter-spacing:.02em;color:var(--accent)}
+.auth svg{width:13px;height:13px;flex:none}
+.tag.au{background:var(--accent-soft);color:var(--accent)}
 .meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted)}
 .card h3{margin:0;font-size:14.5px;font-weight:500;line-height:1.35;overflow-wrap:anywhere;cursor:pointer}
 .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -326,6 +329,7 @@ const PAGE_ID='61560858712146', ZALO='0936286969', SITE='https://ntzone-hub.gith
 const fmt=v=>v?v.toLocaleString('vi-VN')+'đ':null;
 const num=d=>parseInt((d.m||'').replace(/\D/g,''))||0;
 const byNew=(a,b)=>(b.nv||'').localeCompare(a.nv||'')||num(b)-num(a);
+const AUTH_ICON='<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0l2 1.6 2.5-.2.8 2.4 2.1 1.4-.8 2.4.8 2.4-2.1 1.4-.8 2.4-2.5-.2L8 16l-2-1.6-2.5.2-.8-2.4L.6 10.8l.8-2.4-.8-2.4 2.1-1.4.8-2.4 2.5.2z"/><path fill="#fff" d="M6.9 10.6L4.6 8.3l1-1 1.3 1.3 3.5-3.5 1 1z"/></svg>';
 const condTag=u=>u==='New'?'<span class="tag new">New</span>':u==='Likenew'?'<span class="tag ln">Likenew</span>':'<span class="tag">Used</span>';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const CATS=[['all','Tất cả'],['Bóng rổ','Giày bóng rổ'],['Lifestyle','Lifestyle'],['Phụ kiện','Phụ kiện']];
@@ -411,6 +415,7 @@ function card(d){const el=document.createElement('article');el.className='card';
   el.innerHTML=`<div class="gal">${slidesHTML(d,d.n)}<div class="tags">${d.hot?'<span class="tag hot">Hot</span>':''}${condTag(d.u)}${d.tet?'<span class="tag tet">Bộ Tết</span>':''}</div></div>
     <div class="meta"><span>Size ${esc(d.s||'Free')}</span><span>${esc(d.box||d.cat)}</span></div>
     <h3>${esc(d.n)}</h3>
+    <span class="auth">${AUTH_ICON}100% Authentic</span>
     <div class="row"><span class="price${pr?'':' ask'}">${pr||'Liên hệ'}</span><button class="hold" type="button">Giữ hàng</button></div>`;
   wireDots(el);
   el.querySelector('.gal').addEventListener('click',()=>openDetail(d));
@@ -439,7 +444,7 @@ let cur=null;
 function openDetail(d){cur=d;
   $('dCode').textContent=d.m?'Mã '+d.m:'';$('dTitle').textContent=d.n;$('dSize').textContent=d.s||'Free';
   const pr=fmt(d.p);$('dPrice').textContent=pr||'Liên hệ';$('dPrice').className='price'+(pr?'':' ask');
-  $('dTags').innerHTML=(d.hot?'<span class="tag hot">Hot</span>':'')+condTag(d.u)+`<span class="tag">${esc(d.cat)}</span>`+(d.tet?'<span class="tag tet">Bộ Tết</span>':'');
+  $('dTags').innerHTML=(d.hot?'<span class="tag hot">Hot</span>':'')+condTag(d.u)+`<span class="tag">${esc(d.cat)}</span>`+(d.tet?'<span class="tag tet">Bộ Tết</span>':'')+'<span class="tag au">100% Authentic</span>';
   const g=$('dGal');g.innerHTML=slidesHTML(d,d.n);const n=(d.imgs||[]).length;
   if(n>1){g.insertAdjacentHTML('beforeend','<button class="nav l" type="button" aria-label="Ảnh trước">‹</button><button class="nav r" type="button" aria-label="Ảnh sau">›</button>');
     const sl=wireDots(g);g.querySelector('.nav.l').onclick=()=>sl.scrollBy({left:-sl.clientWidth});g.querySelector('.nav.r').onclick=()=>sl.scrollBy({left:sl.clientWidth});}
