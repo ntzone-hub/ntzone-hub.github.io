@@ -224,6 +224,13 @@ button{font:inherit;color:inherit}
 @media (min-width:760px){.pick b{font-size:1.25rem}.pick button{padding:18px 22px}}
 .xlink{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 24px;padding:14px 16px;border:1px dashed var(--line);border-radius:var(--r);font-size:14px}
 .xlink button{font:inherit;font-weight:700;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;white-space:nowrap}
+/* arrows for horizontal rows */
+.hs{position:relative;min-width:0}
+.hs-btn{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);box-shadow:0 4px 14px rgba(0,0,0,.18);display:grid;place-items:center;cursor:pointer;padding:0}
+.hs-btn:hover{border-color:var(--accent);color:var(--accent)}
+.hs-btn.l{left:-8px}.hs-btn.r{right:-8px}
+.hs-btn svg{width:18px;height:18px}
+@media (max-width:480px){.hs-btn{width:34px;height:34px}.hs-btn.l{left:-4px}.hs-btn.r{right:-4px}}
 /* floating Zalo button */
 .fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:15;display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.25)}
 .fab svg{flex:none}
@@ -243,9 +250,10 @@ button{font:inherit;color:inherit}
 .ov{position:fixed;inset:0;z-index:20;background:rgba(10,12,10,.5);display:flex;align-items:flex-end;justify-content:center}
 @media (min-width:760px){.ov{align-items:center;padding:24px}}
 .sheet{background:var(--bg);color:var(--ink);width:100%;max-width:880px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;box-shadow:var(--shadow);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (min-width:760px){.sheet{border-radius:16px}.sheet.det{display:grid;grid-template-columns:1.1fr 1fr}}
+@media (min-width:760px){.sheet{border-radius:16px}.sheet.det{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:start}}
 .sheet.sm{max-width:440px}
-.dgal{position:relative;background:var(--well);aspect-ratio:1/1;max-width:100%}
+.dgal{position:relative;background:var(--well);aspect-ratio:1/1;max-width:100%;min-width:0;overflow:hidden}
+@media (min-width:760px){.sheet.det .dgal{position:sticky;top:0;aspect-ratio:3/4;max-height:92vh}}
 .dgal .slides{cursor:default}
 .dgal .slides img{object-fit:contain}
 .nav{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:0;background:var(--bg);box-shadow:0 2px 10px rgba(0,0,0,.12);cursor:pointer;font-size:18px;line-height:1}
@@ -813,6 +821,18 @@ $('tabOrder').addEventListener('click',()=>{track('chon_muc',{muc:'order'});setV
 document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(!b)return;track('chon_muc',{muc:b.dataset.go});setView(b.dataset.go,true);});
 (function(){let v='san';try{if(new URLSearchParams(location.search).get('muc')==='order')v='order';}catch(e){}
   const hh=(location.hash||'').slice(1).toUpperCase();if(/^NTO/.test(hh))v='order';else if(/^NT\d/.test(hh))v='san';setView(v,false);})();
+const ARW={l:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',r:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>'};
+function hScroll(el,onUse){if(!el||el.dataset.hs)return;el.dataset.hs='1';const w=document.createElement('div');w.className='hs';
+  el.parentNode.insertBefore(w,el);w.appendChild(el);
+  const mk=(d)=>{const b=document.createElement('button');b.type='button';b.className='hs-btn '+d;b.setAttribute('aria-label',d==='l'?'Xem bên trái':'Xem bên phải');b.innerHTML=ARW[d];
+    b.addEventListener('click',()=>{if(onUse)onUse();el.scrollBy({left:(d==='l'?-1:1)*Math.max(160,el.clientWidth*.8),behavior:'smooth'});});w.appendChild(b);return b;};
+  const L=mk('l'),R=mk('r');
+  const upd=()=>{const max=el.scrollWidth-el.clientWidth;L.hidden=max<8||el.scrollLeft<8;R.hidden=max<8||el.scrollLeft>max-8;};
+  el.addEventListener('scroll',()=>requestAnimationFrame(upd),{passive:true});
+  if('ResizeObserver' in window)new ResizeObserver(upd).observe(el);
+  new MutationObserver(()=>requestAnimationFrame(upd)).observe(el,{childList:true});upd();}
+['soon','order','gone','dSameRow'].forEach(id=>hScroll($(id)));
+hScroll($('nwStrip'),()=>{NW.stripPause=Date.now()+5000;});
 async function live(){
   if(!/(^|\.)github\.io$/.test(location.hostname)&&!/[?&]live=1\b/.test(location.search))return;
   try{const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),8000);
