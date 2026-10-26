@@ -1,0 +1,40 @@
+name: Xoa anh da ban
+
+on:
+  push:
+    branches: [main]
+    paths: [index.html]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Xoa anh khong con dung trong index.html
+        run: |
+          python3 - <<'PY'
+          import re, os, subprocess
+          html = open('index.html', encoding='utf-8').read()
+          used = set(re.findall(r'(o?img/[A-Za-z0-9_-]+\.webp)', html))
+          if len(used) < 50:
+              print('Qua it anh trong index.html, dung lai de an toan:', len(used)); raise SystemExit(0)
+          gone = []
+          for d in ('img', 'oimg'):
+              if not os.path.isdir(d): continue
+              for f in os.listdir(d):
+                  p = f'{d}/{f}'
+                  if f.endswith('.webp') and p not in used:
+                      gone.append(p)
+          print('Xoa', len(gone), 'anh:', ' '.join(sorted(gone)))
+          if gone:
+              subprocess.run(['git', 'rm', '-q', '--'] + gone, check=True)
+          PY
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --cached --quiet; then echo "Khong co anh can xoa"; else git commit -m "Xoa anh doi da ban" && git push; fi
